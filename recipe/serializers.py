@@ -6,7 +6,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = ['name','description','price']
 
-    def validate_price(self,price):
+    def validate_price(self,price): 
         if price > 0:
             return price
         else:
