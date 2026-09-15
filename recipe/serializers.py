@@ -17,4 +17,8 @@ class RecipeSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Name and Description cannot be the same")
         else:
             return data
-        
+
+    def create(self, validated_data):
+        validated_data['description'] = "Recipe: " + validated_data['description']
+        return Recipe.objects.create(**validated_data)
+
