@@ -13,8 +13,11 @@ class RecipeSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Price should be positive")
 
     def validate(self,data):
-        if data.get('name',self.instance.name) == data['description']:
-            raise serializers.ValidationError("Name and Description cannot be the same")
+        if self.instance is not None:
+            if data.get('name',self.instance.name) == data['description']:
+                raise serializers.ValidationError("Name and Description cannot be the same")
+            else:
+                return data
         else:
             return data
 
