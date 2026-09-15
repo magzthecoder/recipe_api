@@ -5,3 +5,16 @@ class RecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ['name','description','price']
+
+    def validate_price(self,price):
+        if price > 0:
+            return price
+        else:
+            raise serializers.ValidationError("Price should be positive")
+
+    def validate(self,data):
+        if data['name'] == data['description']:
+            raise serializers.ValidationError("Name and Description cannot be the same")
+        else:
+            return data
+        
