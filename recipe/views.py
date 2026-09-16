@@ -28,3 +28,21 @@ def get_recipe(request,id):
     serializer = RecipeSerializer(recipe)
     serializer.data
     return Response(serializer.data, status=200)
+
+@api_view(['GET','PUT'])
+def update_recipe(request,id):
+    recipe = get_object_or_404(Recipe,id=id)
+    if request.method == 'GET':
+        serializer = RecipeSerializer(recipe)
+        serializer.data
+        return Response(serializer.data, status=200)
+    
+    elif request.method == 'PUT':
+        serializer = RecipeSerializer(recipe,data=request.data)
+        check = serializer.is_valid()
+        if check == True:
+            serializer.validated_data
+            serializer.save()
+        else:
+            return Response(serializer.errors,status=400)
+        return Response(serializer.data,status=200)

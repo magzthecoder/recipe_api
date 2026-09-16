@@ -26,6 +26,8 @@ class RecipeSerializer(serializers.ModelSerializer):
         return Recipe.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
         instance.description = "Updated: " + validated_data.get('description', instance.description)
+        instance.price = validated_data.get('price', instance.price)
         instance.save()
         return instance
