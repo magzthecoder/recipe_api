@@ -58,3 +58,22 @@ def delete_recipe(request,id):
     elif request.method == 'DELETE':
         recipe.delete()
         return Response(status=204)
+
+@api_view(['GET','PATCH'])
+def patch_recipe(request,id):
+    recipe = get_object_or_404(Recipe,id=id)
+    if request.method == 'GET':
+        serializer = RecipeSerializer(recipe)
+        serializer.data
+        return Response(serializer.data, status=200)
+
+    elif request.method == 'PATCH':
+        serializer = RecipeSerializer(recipe, data=request.data,partial=True)
+        check = serializer.is_valid()
+        if check == True:
+            serializer.validated_data
+            serializer.save()
+        else:
+            return Response(serializer.errors,status=400)
+        return Response(serializer.data,status=200)
+
