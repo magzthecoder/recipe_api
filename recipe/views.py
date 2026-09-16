@@ -46,3 +46,15 @@ def update_recipe(request,id):
         else:
             return Response(serializer.errors,status=400)
         return Response(serializer.data,status=200)
+
+@api_view(['GET','DELETE'])
+def delete_recipe(request,id):
+    recipe = get_object_or_404(Recipe,id=id)
+    if request.method == 'GET':
+        serializer = RecipeSerializer(recipe)
+        serializer.data
+        return Response(serializer.data, status=200)
+
+    elif request.method == 'DELETE':
+        recipe.delete()
+        return Response(status=204)
