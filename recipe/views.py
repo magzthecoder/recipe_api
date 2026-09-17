@@ -75,7 +75,7 @@ def patch_recipe(request,id):#partially update a recipe
 def favourite_recipe(request,id):
     recipe = get_object_or_404(Recipe,id=id)
     if request.method == 'POST':
-        if recipe.favourited_by.filter(id=request.user.id).exists():
+        if recipe.favourited_by.filter(id=request.user.id).exists(): #checks if user and recipe model have a relationship
             return Response('No duplicates',status=400)
         else:
             recipe.favourited_by.add(request.user)
@@ -86,11 +86,19 @@ def favourite_recipe(request,id):
 def un_favourite_recipe(request,id):
     if request.method == 'DELETE':
         recipe = get_object_or_404(Recipe,id=id)
-        if recipe.favourited_by.filter(id=request.user.id).exists():
+        if recipe.favourited_by.filter(id=request.user.id).exists(): 
             recipe.favourited_by.remove(request.user)
             return Response(status=204)
         else:
             return Response('Not favoured yet',status=400)
-            
 
-        
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_favourites(request):
+    recipes = Recipe.objects.filter(favourited_by=request.user)
+    if recipes.exists():
+        serializer = RecipeSerializer(recipes,many=True)
+        return Response(serializer.data,status=200)
+    else:
+        serializer = RecipeSerializer(recipes,many=True)
+        return Response(serializer.data,status=200)
