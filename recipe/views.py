@@ -1,8 +1,10 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from .models import Recipe
 from rest_framework.response import Response
 from recipe.serializers import RecipeSerializer
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import User
+from rest_framework.permissions import IsAuthenticated
 
 @api_view(['GET','POST'])
 def get_recipes(request): #get all recipes
@@ -68,3 +70,27 @@ def patch_recipe(request,id):#partially update a recipe
             return Response(serializer.errors,status=400)
         return Response(serializer.data,status=200)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def favourite_recipe(request,id):
+    recipe = get_object_or_404(Recipe,id=id)
+    if request.method == 'POST':
+        if recipe.favourited_by.filter(id=request.user.id).exists():
+            return Response('No duplicates',status=400)
+        else:
+            recipe.favourited_by.add(request.user)
+            return Response(status=201)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def un_favourite_recipe(request,id):
+    if request.method == 'DELETE':
+        recipe = get_object_or_404(Recipe,id=id)
+        if recipe.favourited_by.filter(id=request.user.id).exists():
+            recipe.favourited_by.remove(request.user)
+            return Response(status=204)
+        else:
+            return Response('Not favoured yet',status=400)
+            
+
+        
