@@ -14,7 +14,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def validate(self,data):
         if self.instance is not None:
-            if data.get('name',self.instance.name) == data['description']:
+            if data.get('name',self.instance.name) == data.get('description',self.instance.description): #this checks if an existing name or new name is the same as an existing description or a new description
                 raise serializers.ValidationError("Name and Description cannot be the same")
             else:
                 return data
@@ -27,7 +27,8 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         instance.name = validated_data.get('name', instance.name)
-        instance.description = "Updated: " + validated_data.get('description', instance.description)
+        if 'description' in validated_data:
+            instance.description = "Updated: " + validated_data['description']
         instance.price = validated_data.get('price', instance.price)
         instance.save()
         return instance
