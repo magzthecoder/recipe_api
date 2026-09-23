@@ -44,8 +44,9 @@ def update_recipe(request,id):#update one recipe
         return Response(serializer.data,status=200)
 
 @api_view(['GET','DELETE'])
+@permission_classes([IsAuthenticated])
 def delete_recipe(request,id): #delete recipe
-    recipe = get_object_or_404(Recipe,id=id)
+    recipe = get_object_or_404(Recipe,id=id,user=request.user)
     if request.method == 'GET':
         serializer = RecipeSerializer(recipe)
         return Response(serializer.data, status=200)
