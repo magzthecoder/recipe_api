@@ -5,6 +5,7 @@ from recipe.serializers import RecipeSerializer
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.pagination import PageNumberPagination
 
 @api_view(['GET','POST'])
 def get_recipes(request): #get all recipes
@@ -18,8 +19,11 @@ def get_recipes(request): #get all recipes
         return Response(serializer.data,status=201)
     else:
         recipes = Recipe.objects.all()
-        serializer = RecipeSerializer(recipes,many=True)
-        return Response(serializer.data)
+        paginator = PageNumberPagination()
+        paginated_recipes = paginator.paginate_queryset(recipes,request)
+        serializer = RecipeSerializer(paginated_recipes,many=True)
+        result = paginator.get_paginated_response(serializer.data)
+        return result
 
 @api_view(['GET'])
 def get_recipe(request,id): #get one recipe
