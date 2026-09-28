@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
+from django_filters.rest_framework import DjangoFilterBackend
 
 @api_view(['GET','POST'])
 def get_recipes(request): #get all recipes
@@ -19,6 +20,13 @@ def get_recipes(request): #get all recipes
         return Response(serializer.data,status=201)
     else:
         recipes = Recipe.objects.all()
+        name = request.query_params.get('name')
+        if name:
+            recipes = recipes.filter(name=name)
+
+        price = request.query_params.get('price')
+        if price:
+            recipes = recipes.filter(price=price)
         paginator = PageNumberPagination()
         paginated_recipes = paginator.paginate_queryset(recipes,request)
         serializer = RecipeSerializer(paginated_recipes,many=True)
