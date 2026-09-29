@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
+from rest_framework import filters
 
 @api_view(['GET','POST'])
 def get_recipes(request): #get all recipes
@@ -29,12 +30,20 @@ def get_recipes(request): #get all recipes
         search_query = request.query_params.get('search', None)
         if search_query: #if user does provide search
             search_fields = recipes.filter(Q(name__icontains=search_query) | Q(description__icontains=search_query))
+            #ordering
+            ordering_backends = filters.OrderingFilter()
+            ordering_backends.ordering_fields = ['name','price']
+            recipes = ordering_backends.filter_queryset(request,search_fields,view=ordering_backends)
             paginator = PageNumberPagination()
-            paginated_recipes = paginator.paginate_queryset(search_fields,request)
+            paginated_recipes = paginator.paginate_queryset(recipes,request)
             serializer = RecipeSerializer(paginated_recipes,many=True)
             result = paginator.get_paginated_response(serializer.data)
             return result
         else:#no search
+            #ordering
+            ordering_backends = filters.OrderingFilter()
+            ordering_backends.ordering_fields = ['name','price']
+            recipes = ordering_backends.filter_queryset(request,recipes,view=ordering_backends)
             paginator = PageNumberPagination()
             paginated_recipes = paginator.paginate_queryset(recipes,request)
             serializer = RecipeSerializer(paginated_recipes,many=True)
