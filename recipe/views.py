@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
-from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Q
 
 @api_view(['GET','POST'])
 def get_recipes(request): #get all recipes
@@ -23,15 +23,23 @@ def get_recipes(request): #get all recipes
         name = request.query_params.get('name')
         if name:
             recipes = recipes.filter(name=name)
-
         price = request.query_params.get('price')
         if price:
             recipes = recipes.filter(price=price)
-        paginator = PageNumberPagination()
-        paginated_recipes = paginator.paginate_queryset(recipes,request)
-        serializer = RecipeSerializer(paginated_recipes,many=True)
-        result = paginator.get_paginated_response(serializer.data)
-        return result
+        search_query = request.query_params.get('search', None)
+        if search_query: #if user does provide search
+            search_fields = recipes.filter(Q(name__icontains=search_query) | Q(description__icontains=search_query))
+            paginator = PageNumberPagination()
+            paginated_recipes = paginator.paginate_queryset(search_fields,request)
+            serializer = RecipeSerializer(paginated_recipes,many=True)
+            result = paginator.get_paginated_response(serializer.data)
+            return result
+        else:#no search
+            paginator = PageNumberPagination()
+            paginated_recipes = paginator.paginate_queryset(recipes,request)
+            serializer = RecipeSerializer(paginated_recipes,many=True)
+            result = paginator.get_paginated_response(serializer.data)
+            return result
 
 @api_view(['GET'])
 def get_recipe(request,id): #get one recipe
