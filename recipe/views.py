@@ -21,6 +21,7 @@ def get_recipes(request): #get all recipes
         return Response(serializer.data,status=201)
     else:
         recipes = Recipe.objects.all()
+        #filtering
         name = request.query_params.get('name')
         if name:
             recipes = recipes.filter(name=name)
@@ -29,26 +30,16 @@ def get_recipes(request): #get all recipes
             recipes = recipes.filter(price=price)
         search_query = request.query_params.get('search', None)
         if search_query: #if user does provide search
-            search_fields = recipes.filter(Q(name__icontains=search_query) | Q(description__icontains=search_query))
-            #ordering
-            ordering_backends = filters.OrderingFilter()
-            ordering_backends.ordering_fields = ['name','price']
-            recipes = ordering_backends.filter_queryset(request,search_fields,view=ordering_backends)
-            paginator = PageNumberPagination()
-            paginated_recipes = paginator.paginate_queryset(recipes,request)
-            serializer = RecipeSerializer(paginated_recipes,many=True)
-            result = paginator.get_paginated_response(serializer.data)
-            return result
-        else:#no search
-            #ordering
-            ordering_backends = filters.OrderingFilter()
-            ordering_backends.ordering_fields = ['name','price']
-            recipes = ordering_backends.filter_queryset(request,recipes,view=ordering_backends)
-            paginator = PageNumberPagination()
-            paginated_recipes = paginator.paginate_queryset(recipes,request)
-            serializer = RecipeSerializer(paginated_recipes,many=True)
-            result = paginator.get_paginated_response(serializer.data)
-            return result
+            recipes = recipes.filter(Q(name__icontains=search_query) | Q(description__icontains=search_query))
+        #ordering
+        ordering_backends = filters.OrderingFilter()
+        ordering_backends.ordering_fields = ['name','price']
+        recipes = ordering_backends.filter_queryset(request,recipes,view=ordering_backends)
+        #pagination
+        paginator = PageNumberPagination()
+        paginated_recipes = paginator.paginate_queryset(recipes,request)
+        serializer = RecipeSerializer(paginated_recipes,many=True)
+        return paginator.get_paginated_response(serializer.data)
 
 @api_view(['GET'])
 def get_recipe(request,id): #get one recipe
